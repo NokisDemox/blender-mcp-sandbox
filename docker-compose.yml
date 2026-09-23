@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  blender-mcp:
+    build:
+      context: .
+      args:
+        BLENDER_VERSION: ${BLENDER_VERSION:-5.2.2}
+      dockerfile: Dockerfile
+    container_name: blender_mcp_sandbox
+    environment:
+      - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
+      - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
+      - DISPLAY=${DISPLAY}
+      - QT_QPA_PLATFORM=wayland;xcb
+      - GDK_BACKEND=wayland,x11
+      - __GLX_VENDOR_LIBRARY_NAME=nvidia
+    volumes:
+      - ${XDG_RUNTIME_DIR}:${XDG_RUNTIME_DIR}:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+      - ./project_data:/workspace
+    devices:
+      # NVIDIA RUNTIME through CDI
+      - nvidia.com/gpu=all
+    ports:
+      - "10800:10800"
+    working_dir: /workspace
