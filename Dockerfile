@@ -46,13 +46,15 @@ RUN mkdir -p /opt/blender && \
 ENV PATH="/opt/blender:${PATH}"
 
 # 3. Clone and install the latest Blender MCP Add-on into system scripts
-RUN mkdir -p /tmp/mcp_addon \
-    /opt/blender/${BLENDER_MAJOR_MINOR}/scripts/addons/blender_mcp \
-    /opt/blender/${BLENDER_MAJOR_MINOR}/scripts/extensions/user_default/blender_mcp && \
-    curl -sSL "https://projects.blender.org/lab/blender_mcp/releases/download/v${MCP_VERSION}/mcp-${MCP_VERSION}.zip?repository=https%3A%2F%2Flab.blender.org%2F&blender_version_min=5.1.0" -o /tmp/mcp_addon/mcp.zip && \
-    unzip -q /tmp/mcp_addon/mcp.zip -d /tmp/mcp_addon/extracted && \
-    cp -r /tmp/mcp_addon/extracted/. /opt/blender/${BLENDER_MAJOR_MINOR}/scripts/addons/blender_mcp/ && \
-    cp -r /tmp/mcp_addon/extracted/. /opt/blender/${BLENDER_MAJOR_MINOR}/scripts/extensions/user_default/blender_mcp/ && \
+RUN mkdir -p /tmp/mcp_addon && \
+    curl -fSL "https://projects.blender.org/lab/blender_mcp/releases/download/v${MCP_VERSION}/mcp-${MCP_VERSION}.zip?repository=https%3A%2F%2Flab.blender.org%2F&blender_version_min=5.1.0" \
+      -o /tmp/mcp_addon/mcp.zip && \
+    blender --command extension validate /tmp/mcp_addon/mcp.zip && \
+    blender --command extension install-file \
+      -r user_default \
+      -e \
+      /tmp/mcp_addon/mcp.zip && \
+    blender --command extension list && \
     rm -rf /tmp/mcp_addon
 
 WORKDIR /workspace
