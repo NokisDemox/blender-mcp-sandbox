@@ -5,11 +5,15 @@ MCP_VERSION ?= 1.0.3
 DISPLAY_SERVER ?= wayland
 WORKSPACE_DIR ?= ./project_data
 
-# Execution Commands
-COMPOSE_CMD := COMPOSE_PROJECT_NAME=$(PROJECT_NAME) podman-compose
+# Auto-detect Container Engine (Podman preferred, fallback to Docker)
+CONTAINER_ENGINE ?= $(shell command -v podman 2>/dev/null || command -v docker 2>/dev/null)
+COMPOSE_ENGINE   ?= $(shell command -v podman-compose 2>/dev/null || echo "$(CONTAINER_ENGINE) compose")
+
+# Compose Command Wrapper
+COMPOSE_CMD := COMPOSE_PROJECT_NAME=$(PROJECT_NAME) $(COMPOSE_ENGINE)
 
 .DEFAULT_GOAL := help
-.PHONY: up down rebuild ps purge audit help
+.PHONY: up down rebuild ps purge audit help shell
 
 #@ Environment & Container Management
 
@@ -35,6 +39,13 @@ rebuild: down
 ps:
 	@echo "--> Running containers for $(PROJECT_NAME):"
 	podman ps --filter "label=io.podman.compose.project=$(PROJECT_NAME)"
+
+#@ Development & Debugging
+
+## Open an interactive bash shell inside the running container
+shell:
+	@echo "--> Entering interactive shell in $(PROJECT_NAME)..."
+	podman exec -it $(PROJECT_NAME) /bin/bash
 
 #@ Maintenance & Cleanup
 
