@@ -64,7 +64,7 @@ COPY startup_init.py entrypoint.sh /opt/
 RUN chmod +x /opt/entrypoint.sh && \
     blender --background --python /opt/startup_init.py
 
-# 4. Install the Blender MCP bridge server (pip + venv, pinned to MCP_VERSION)
+# 5. Install the Blender MCP bridge server (pip + venv, pinned to MCP_VERSION)
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python3 \
         python3-venv \
@@ -79,7 +79,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
-# 5. Install opencode
+# 6. Install opencode
 RUN curl -fsSL https://opencode.ai/v2/install | bash
 
 # Container startup: re-apply prefs with GPU present, audit GPU, launch GUI.

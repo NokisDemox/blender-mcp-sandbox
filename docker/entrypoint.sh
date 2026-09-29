@@ -8,11 +8,15 @@
 # idempotent, so this costs a few seconds and self-heals any drift.
 set -e
 
+# Blender's file browser opens in the process working directory when no
+# file is loaded. Pin it to /workspace so Open/Save dialogs start there.
+cd /workspace
+
 echo "--> [entrypoint] Applying Blender preferences..."
 blender --background --python /opt/startup_init.py
 
 echo "--> [entrypoint] GPU audit..."
-blender --background --python-expr "import gpu; print('[GPU Audit] Vendor:', gpu.platform.vendor_get(), '| Renderer:', gpu.platform.renderer_get())"
+blender --background --python-expr "import gpu; gpu.init(); print('[GPU Audit] Vendor:', gpu.platform.vendor_get(), '| Renderer:', gpu.platform.renderer_get())"
 
 echo "--> [entrypoint] Launching Blender..."
 if [ "$#" -eq 0 ]; then

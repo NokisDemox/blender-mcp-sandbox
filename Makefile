@@ -3,7 +3,6 @@ PROJECT_NAME ?= blender_mcp_sandbox
 BLENDER_VERSION ?= 5.2.2
 MCP_VERSION ?= 1.0.3
 DISPLAY_SERVER ?= wayland
-WORKSPACE_DIR ?= ./project_data
 
 # Auto-detect Container Engine (Podman preferred, fallback to Docker)
 CONTAINER_ENGINE ?= $(shell command -v podman 2>/dev/null || command -v docker 2>/dev/null)
