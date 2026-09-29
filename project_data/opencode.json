@@ -1,0 +1,11 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "blender": {
+        "type": "local",
+        "command": ["/usr/local/bin/blender-mcp"]
+      }
+    }
+  }
+}

@@ -41,6 +41,13 @@ through MCP on `localhost:10800`.
 
 ```bash
 make help            # list targets and variables
+make up              # first launch: create + start containers + run GPU audit
+make stop            # stop containers, keep them for restart
+make start           # restart stopped containers without recreating
+make audit           # print Blender version, GPU vendor/renderer
+make shell           # open bash inside the running container
+make ps              # show container status
+make down            # stop AND REMOVE containers (next start needs up)
 ```
 
 Override per run, e.g.:
@@ -60,14 +67,30 @@ make up DISPLAY_SERVER=x11 BLENDER_VERSION=5.2.2
 | `MCP_VERSION` | `1.0.3` | MCP add-on version (Dockerfile `ARG`; compose passthrough planned) |
 | `DISPLAY_SERVER` | `wayland` | Intended display protocol (switching not yet implemented) |
 | `WORKSPACE_DIR` | `./project_data` | Host workspace mounted at `/workspace` |
+| `BLENDER_MCP_HOST` | `localhost` | Host the bridge uses to reach the add-on (compose env) |
+| `BLENDER_MCP_PORT` | `10800` | Port the bridge uses to reach the add-on (compose env) |
+
+Blender is preconfigured by `startup_init.py`: Allow Online Access on,
+MCP add-on enabled on `localhost:10800` with autostart, Cycles on CUDA
+with visible GPU devices enabled. The script runs once at image build
+and again at every container start (`entrypoint.sh`), because GPU
+devices can only be enumerated when the NVIDIA device is attached.
+`userpref.blend` lives inside the image (`/root/.config/...`), so it
+survives `down/up`; to change a preset, edit `startup_init.py` and
+`make rebuild`. Do not hand-edit prefs inside a running container --
+entrypoint will overwrite them on next start.
 
 Key files:
 
 - `Dockerfile` — single-stage `ubuntu:24.04` image: Blender tarball,
-  MCP extension install, OpenCode install, one-line GPU audit `CMD`.
+  MCP extension install, `startup_init.py` bake, MCP bridge (pip/venv),
+  OpenCode install, `entrypoint.sh` startup.
+- `startup_init.py` — idempotent Blender prefs bootstrap (see above).
+- `entrypoint.sh` — re-applies prefs with GPU present, prints GPU audit,
+  launches Blender GUI.
 - `docker-compose.yml` — CDI GPU, Wayland+X11 mounts, `10800:10800`,
   `./project_data:/workspace`.
-- `Makefile` — `up / down / rebuild / ps / shell / purge / audit / help`.
+- `Makefile` — `up / start / stop / down / rebuild / ps / shell / purge / audit / help`.
 - `TODO.md` — source of truth for status. Read before contributing.
 - `AGENTS.md` — agent operating manual and locked decisions.
 

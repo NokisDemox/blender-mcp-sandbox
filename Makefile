@@ -21,7 +21,7 @@ COMPOSE_CMD := COMPOSE_PROJECT_NAME=$(PROJECT_NAME) $(COMPOSE_ENGINE)
 up:
 	@echo "--> Starting $(PROJECT_NAME) in $(DISPLAY_SERVER) mode..."
 	@xhost +local: > /dev/null 2>&1 || true
-	BLENDER_VERSION=$(BLENDER_VERSION) DISPLAY_SERVER=$(DISPLAY_SERVER) $(COMPOSE_CMD) up -d
+	BLENDER_VERSION=$(BLENDER_VERSION) MCP_VERSION=$(MCP_VERSION) DISPLAY_SERVER=$(DISPLAY_SERVER) $(COMPOSE_CMD) up -d
 	$(MAKE) audit
 
 ## Stop and remove running project containers
@@ -32,7 +32,7 @@ down:
 ## Stop containers and force a clean image rebuild without cache
 rebuild: down
 	@echo "--> Rebuilding $(PROJECT_NAME) image from scratch (no cache)..."
-	BLENDER_VERSION=$(BLENDER_VERSION) DISPLAY_SERVER=$(DISPLAY_SERVER) $(COMPOSE_CMD) build --no-cache
+	BLENDER_VERSION=$(BLENDER_VERSION) MCP_VERSION=$(MCP_VERSION) DISPLAY_SERVER=$(DISPLAY_SERVER) $(COMPOSE_CMD) build --no-cache
 	$(MAKE) up
 
 ## Display container execution status for this project
@@ -79,6 +79,7 @@ help:
 	@echo "  PROJECT_NAME     Compose project scope (Default: $(PROJECT_NAME))"
 	@echo "  DISPLAY_SERVER   Display protocol: wayland | x11 (Default: $(DISPLAY_SERVER))"
 	@echo "  BLENDER_VERSION  Target Blender binary version (Default: $(BLENDER_VERSION))"
+	@echo "  MCP_VERSION      Target Blender MCP add-on/bridge version (Default: $(MCP_VERSION))"
 	@echo ""
 	@awk '/^#@/ { print "\n\033[1;33m" substr($$0, 4) "\033[0m" } \
 		/^##/ { helpMsg = substr($$0, 4) } \

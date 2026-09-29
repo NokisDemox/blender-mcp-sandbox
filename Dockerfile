@@ -59,5 +59,28 @@ RUN mkdir -p /tmp/mcp_addon && \
 
 WORKDIR /workspace
 
-# Default startup sequence: Run hardware diagnostic printout, then launch GUI
-CMD ["bash", "-c", "blender --background --python-expr \"import gpu; print('[GPU Audit] Vendor:', gpu.platform.vendor_get(), '| Renderer:', gpu.platform.renderer_get())\" && blender"]
+# 4. Bake Blender preferences of startup_init.py
+COPY startup_init.py entrypoint.sh /opt/
+RUN chmod +x /opt/entrypoint.sh && \
+    blender --background --python /opt/startup_init.py
+
+# 4. Install the Blender MCP bridge server (pip + venv, pinned to MCP_VERSION)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3 \
+        python3-venv \
+        python3-pip \
+        git \
+    && python3 -m venv /opt/blender-mcp-venv \
+    && /opt/blender-mcp-venv/bin/pip install --no-cache-dir \
+        "blender-mcp @ git+https://projects.blender.org/lab/blender_mcp.git@v${MCP_VERSION}#subdirectory=mcp" \
+    && ln -s /opt/blender-mcp-venv/bin/blender-mcp /usr/local/bin/blender-mcp \
+    && blender-mcp --help \
+    && apt-get purge -y git \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# 5. Install opencode
+RUN curl -fsSL https://opencode.ai/v2/install | bash
+
+# Container startup: re-apply prefs with GPU present, audit GPU, launch GUI.
+ENTRYPOINT ["/opt/entrypoint.sh"]

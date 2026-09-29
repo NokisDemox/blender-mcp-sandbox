@@ -62,6 +62,9 @@ eggs/
 project_data/renders/
 project_data/bakes/
 project_data/cache/
+# Local manual clone of the blender_mcp repo
+project_data/blender_mcp/
+
 *.png
 *.exr
 *.hdr
